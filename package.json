@@ -1,0 +1,21 @@
+{
+  "name": "drawio-embed",
+  "version": "1.0.0",
+  "description": "automatically integrates drawio by iframe",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imaoda/drawio-embed.git"
+  },
+  "keywords": [
+    "drawio",
+    "svg",
+    "flowchart"
+  ],
+  "author": "wangyongfeng",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/imaoda/drawio-embed/issues"
+  },
+  "homepage": "https://github.com/imaoda/drawio-embed#readme"
+}
