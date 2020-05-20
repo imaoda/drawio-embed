@@ -36,7 +36,7 @@ openDrawio();
 ```html
 <script
   defer
-  src="https://raw.githubusercontent.com/imaoda/drawio-embed/master/umd/drawio-embed.min.js"
+  src="https://imaoda.github.io/drawio-embed/umd/drawio-embed.min.js"
   onload="window.openDrawio = drawioEmbed()"
 ></script>
 ```
@@ -83,13 +83,13 @@ openDrawio();
 
 默认调用 drawio 官网的流程图，初次访问较慢 _(不过初次加载后会建立 service worker 缓存)_。当然，如果追求速度和安全性，我们也可以自己部署一套，部署十分方便，只需 2 步，完成静态资源托管
 
-1. git clone https://github.com/jgraph/drawio
+1. `git clone https://github.com/jgraph/drawio`
 2. 静态资源托管 `src/main/webapp` 路径
 
 在初始化的时候，更改配置，指向自己部署的 drawio
 
 ```js
-const openDrawio = drawioEmbed("https://xxx.com");
+const openDrawio = drawioEmbed(yourWebsiteUrl);
 ```
 
 ## Documentation
@@ -103,48 +103,83 @@ const openDrawio = drawioEmbed();
 
 执行 `drawioEmbed()` 将在你的页面中，插入一个 iframe，iframe 加载流程图，并挪动到可视区域之外
 
-首次初始化之后，重复执行 `drawioEmbed()` 不会再执行，但依然会返回 `openDrawio` 的引用
+首次初始化之后，再次重复执行 `drawioEmbed()` 不会再初始化，但依然会返回 `openDrawio` 的引用
 
-### 打开 drawio
+### 打开流程图编辑器
 
 在页面中，通过初始化时的函数，来唤起 drawio 页面
 
 ```js
-openDrawio();
+import drawioEmbed from "drawio-embed";
+const openDrawio = drawioEmbed();
+
+// 在特定的时机，打开流程图
+button.onclick = () => openDrawio();
 ```
 
 此时 drawio 的 iframe 会全屏覆盖你的窗口。
 
-如果需要在打开的时候，指定打开一个已有的 svg 图片，比如继续编辑上次的内容
+### 打开流程图编辑器，并初始化加载一个流程图
+
+如果需要打开一个已有的 svg 图片，比如继续编辑上次的内容，可以：
+
+1. 传递一个 svg 文本
+2. 传递一个网络地址
 
 ```js
 openDrawio("https://xxx.com/1.svg");
 openDrawio("<svg>...</svg>");
 ```
 
-注：这里的 svg 需使用 drawio 生成的 svg _(包含了附加的流程图信息)_，否则会提示无法打开
+> 注意：这里的 svg 图片须为通过本项目导出的 svg，而非任意 svg
 
-## 获取 drawio 导出的图片
+### 获取流程图编辑器导出的图片
 
-在 drawio 编辑界面，点击右上角的「确定」按钮，可将编辑的流程图导出，并关闭 drawio 页面。代码中如何监听 drawio 发来的图片数据呢？可通过事件来捕获
+在 drawio 编辑界面，点击右上角的「保存」按钮，可将编辑的流程图导出，同时会默认自动关闭编辑器窗口
 
-1. 在页面初始化的时，为 `window` 增加特定的监听
+1. 为 `window` 绑定监听 `drawioImageCreated` 事件
 2. 在触发事件时，提取其中的数据
 
 ```js
-window.addEventListener("drawioImageCreated", ev => {
-  const { imageType, imageContent } = ev;
-  if (type === "png") {
-    console.log("base64 格式的 png 图片信息", imageContent);
-  } else {
-    console.log("svg 标签文本", imageContent); // <svg>...</svg>
+window.addEventListener("drawioImageCreated", evt => {
+  const { imageType, imageContent } = evt;
+  switch (imageType) {
+    case "png":
+      console.log("base64 格式的 png 图片信息", imageContent);
+      break;
+    case "svg":
+      console.log("svg 标签文本", imageContent); // <svg>...</svg>
+      break;
   }
 });
 ```
 
-一次用户保存，会在两个 eventLoop 里派发出两个 `drawioImageCreated` 事件，一个是导出 PNG，另一个是导出 SVG，开发者可根据实际需求，进行事件的监听
+一次用户保存，会在两个 eventLoop 里派发出两个 `drawioImageCreated` 事件，通过 `imageType` 来区分类别
 
-## 聊一聊 drawio 的初始化
+1. 导出 PNG
+2. 导出 SVG
+
+开发者可根据实际需求，选择性监听
+
+### 关闭流程图编辑器
+
+通常，用户在编辑时，如果点击了「保存」或者「取消」按钮，会自动关闭编辑器。当然我们也可以主动控制其关闭
+
+```js
+openDrawio.close();
+```
+
+## TypeScript
+
+`drawio-embed` include [Typescript](https://www.typescriptlang.org/) definitions
+
+```js
+import drawioEmbed from "drawio-embed";
+const openDrawio = drawioEmbed();
+openDrawio.close();
+```
+
+## 聊一聊流程图嵌入原理
 
 借助本工具，会自动将 drawio 会以 iframe 的形式初始化，我们可以把它看成一个附属的应用程序，我们借助它来绘制图片以及创建图片数据。
 
@@ -205,16 +240,6 @@ window.addEventListener("message", function(e) {
 ## svg 安全问题
 
 ## 最佳实践
-
-## TypeScript
-
-`drawio-embed` include [Typescript](https://www.typescriptlang.org/) definitions
-
-```js
-import drawioEmbed from "drawio-embed";
-const openDrawio = drawioEmbed();
-openDrawio.close();
-```
 
 ## Author
 
