@@ -234,15 +234,32 @@ drawio 流程图在初始化后以 iframe 的形式嵌入，仿佛是一个附�
 | export  | 请求导出图片      | 父页面 |
 | spinner | 显示/隐藏 loading | 父页面 |
 
+![](https://imaoda.github.io/drawio-embed/static/communication.png)
+
+基于协议，页面和流程图可以「桥接」两个进程，通过类似事件的通知，来实现互相的调用和数据传递。
+
+而 `drawio-embed` 在这里充当了通信的代理者，让整个流程变得更简化，开箱即用。除此之外，`drawio-embed` 还做了一个事情，就是负责了流程图的创建、显示、隐藏等生命周期，与通信过程相结合，符合一般开发场景
+
 ### 流程图的生命周期
 
 ![](https://imaoda.github.io/drawio-embed/static/lifecircle.png)
 
-drawio 的初始化过程，分为以下几个阶段：
+主要包含以下环节：
 
-1. 父页面初始加载
-2. 执行 `drawioIntegrator` 开始挂载 drawio iframe。此时 openDraw 方法可使用，但可能出现还在初始化的报错
-3. drawio iframe 加载完毕，向 parent window 发出 `load` 事件。此时 openDraw 可以正常唤起编辑页面
+1. 父页面初始加载，并隐藏
+2. 监听 load 事件自动打开流程图
+3. 监听 save/exit 事件自动隐藏流程图
+4. 监听 export 事件，合成新的 Event，发送给父页面
+5. 维护流程图的开启/关闭状态
+
+### 巧妙的 svg 的格式
+
+`drawio-embed` 巧妙之处在于使用了一种特别的 svg 特性，它的优势在于：
+
+1. 像一个普通的 svg 图片一样被各种预览工具打开，如 chrome、微信 webview
+2. 能携带 xml 编辑数据，在 drawio 中恢复编辑
+
+这也是 `drawio-embed` 这个工具最大的优势所在
 
 ## 聊一聊 drawio 与父页面的通信
 
