@@ -64,6 +64,14 @@ class DrawioEmbed extends ItvCheck {
     this.hideIframe();
   };
 
+  isOpen = () => {
+    return this.isIframeVisible;
+  };
+
+  isLoaded = () => {
+    return this.initialized;
+  };
+
   editImage = url => {
     if (!this.drawioFrameLoaded) return Promise.reject();
     if (!url) {
@@ -125,6 +133,8 @@ class DrawioEmbed extends ItvCheck {
 
   init = drawioUrl => {
     this.editImage.close = this.closeIframe;
+    this.editImage.isOpen = this.isOpen;
+    this.editImage.isLoaded = this.isLoaded;
     if (this.iframeInserted) return this.editImage;
     this.iframeInserted = true;
     if (!drawioUrl) drawioUrl = "https://www.draw.io/";
