@@ -79,6 +79,10 @@ openDrawio();
 </html>
 ```
 
+效果如下图：
+
+![](https://imaoda.github.io/drawio-embed/static/demo.gif)
+
 ## 部署自己的 drawio
 
 默认调用 drawio 官网的流程图，初次访问较慢 _(不过初次加载后会建立 service worker 缓存)_。当然，如果追求速度和安全性，我们也可以自己部署一套，部署十分方便，只需 2 步，完成静态资源托管
@@ -133,6 +137,26 @@ openDrawio("<svg>...</svg>");
 
 > 注意：这里的 svg 图片须为通过本项目导出的 svg，而非任意 svg
 
+### 尝试打开一个尚未加载好的编辑器
+
+编辑器初始化需要一定的时间，如果过早的调用 `openDrawio()` 打开，可能实际无法打开，原因有：
+
+1. 流程图的网络资源还在加载
+2. 流程图的内部初始化尚未结束
+
+返回的 `Promise` 会进入 `reject` 态，我们借此提醒用户
+
+```js
+opneDrawio().catch(() => {
+  console.log("编辑器还在初始化中，请稍后再打开...");
+});
+```
+
+另外，如果需要精细控制，可以：
+
+1. 监听 `drawioLoaded` 事件，该事件只会触发一次，表明流程图编辑器已经 ready
+2. `openDrawio.isLoaded()` 判断流程图编辑器是否已经加载好
+
 ### 获取流程图编辑器导出的图片
 
 在 drawio 编辑界面，点击右上角的「保存」按钮，可将编辑的流程图导出，同时会默认自动关闭编辑器窗口
@@ -179,23 +203,38 @@ const openDrawio = drawioEmbed();
 openDrawio.close();
 ```
 
-## 聊一聊流程图嵌入原理
+## 浅析原理
 
-借助本工具，会自动将 drawio 会以 iframe 的形式初始化，我们可以把它看成一个附属的应用程序，我们借助它来绘制图片以及创建图片数据。
+> tips: 下文的配图由 drawio 流程图绘制完成
 
-iframe 形式的引入通常是耦合性较小的方式，并且我们也可以灵活方便的控制其加载时机。但同时还引入一个问题是，我们并不知道 iframe 是否加载完成，iframe 页面是否可以和我们的主页面进行通信。
+### 嵌入方案
 
-因此在我们调用 `openDrawio` 时，有可能 iframe 还未加载完，为此，我们提供了一个错误回调
+drawio 流程图在初始化后以 iframe 的形式嵌入，仿佛是一个附属的应用程序，有两个状态：
 
-```js
-openDrawio(er => {
-  console.log(`drawio 还在初始化中，请稍后打开 ${er.msg}`);
-});
+1. 隐藏：iframe 在视野不可见
+2. 显示：iframe 在视野可见，并且绝对定位置于页面顶部
 
-openDrawio("https://xxx.com/1.svg", () => {
-  console.log(`drawio 还在初始化中，请稍后打开`);
-});
-```
+![](https://imaoda.github.io/drawio-embed/static/iframe.png)
+
+### 页面与流程图的通信
+
+页面和流程图是父子 frame 的关系，因此采用 postMessage 进行双向通信
+
+> postMessage 仅支持字符串，因此复杂的数据结构通过 JSON 来序列化/反序列化
+
+双方建立在 postMessage 的收发通道上，约定了几种通信的协议：
+
+| 协议名  | 含义              | 来源方 |
+| ------- | ----------------- | ------ |
+| init    | 流程图加载完      | 流程图 |
+| save    | 用户点击了保存键  | 流程图 |
+| exit    | 用户点击了取消键  | 流程图 |
+| export  | 有图片数据导出    | 流程图 |
+| load    | 请求加载图片      | 父页面 |
+| export  | 请求导出图片      | 父页面 |
+| spinner | 显示/隐藏 loading | 父页面 |
+
+### 流程图的生命周期
 
 drawio 的初始化过程，分为以下几个阶段：
 
