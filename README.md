@@ -236,13 +236,13 @@ drawio 流程图在初始化后以 iframe 的形式嵌入，仿佛是一个附�
 
 ### 流程图的生命周期
 
+![](https://imaoda.github.io/drawio-embed/static/lifecircle.png)
+
 drawio 的初始化过程，分为以下几个阶段：
 
 1. 父页面初始加载
 2. 执行 `drawioIntegrator` 开始挂载 drawio iframe。此时 openDraw 方法可使用，但可能出现还在初始化的报错
 3. drawio iframe 加载完毕，向 parent window 发出 `load` 事件。此时 openDraw 可以正常唤起编辑页面
-
-> 向 window 添加 drawioImageCreated 事件可在任意阶段添加，不受初始化过程影响
 
 ## 聊一聊 drawio 与父页面的通信
 
