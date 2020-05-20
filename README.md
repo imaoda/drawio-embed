@@ -7,60 +7,90 @@
 
 ## 简介
 
-让 drawio 的植入更加简单的嵌入你的网页中，在需要的时候，唤出 drawio 进行编辑，在编辑完成后将图片数据返回给你的网页。
+傻瓜式地在你的网页中嵌入流程图。在一键植入后，开发者只需关心：
 
-开发者无需关心 drawio 和你的网页之间的通信逻辑，只需关心出口和入口：
-
-1. 调用 api 打开 drawio
-2. 监听 drawio 返回的数据 (如 base64 格式的图片、xml 等)
+1. 在需要的时候，调用命令唤起 drawio 流程图来编辑
+2. 监听编辑完成后返回的图片数据
 
 ## 快速开始
+
+整个过程，通常只需 3 步骤
 
 ```js
 import drawioEmbed from "drawio-embed";
 
-// 初始化 drawio iframe
+// 初始化
 const openDrawio = drawioEmbed();
 
-// 初始化对 drawio 保存的监听
-window.addEventListener("drawioImageCreated", e => {
-  const content = e.imageContent;
-  if (typeof content === "string" && content.startsWith("data")) {
-    this.a = content;
-  }
+// 监听返回的图片数据
+window.addEventListener("drawioImageCreated", evt => {
+  const { imageContent, imageType } = evt;
 });
 
-// 打开 drawio 开始编辑
+// 在需要时打开 drawio 开始编辑
 openDrawio();
-```
-
-## 嵌入个人部署的 drawio
-
-drawio 官网有时候访问速度较慢，可以自己部署一套，部署十分方便
-
-1. git clone https://github.com/jgraph/drawio
-2. 把整个 `src/main/webapp 路径静态资源托管即可
-
-在初始化的时候，支持加载自己部署的 drawio
-
-```js
-const openDrawio = drawioIntegrator("https://xxx.com");
 ```
 
 ## 使用 UMD 方式引入
 
-直接 umd 引入 script 也可以支持完成 drawio 的初始化
-
 ```html
 <script
   defer
-  async
-  src="drawio-integrator-0.0.4.min.js"
-  onload="window.openDrawio = drawioIntegrator()"
+  src="https://raw.githubusercontent.com/imaoda/drawio-embed/master/umd/drawio-embed.min.js"
+  onload="window.openDrawio = drawioEmbed()"
 ></script>
 ```
 
-由于有时候流程图功能不是初始化必备的，为了避免对页面的阻塞，我们通常可以滞后加载。在这种情况，使用 openDrawio 时要有一些安全判断
+流程图初始化时会占用较多的网络资源，可选择滞后加载，或按需加载
+
+## DIY
+
+打开下面的代码可尝试用，[Demo]()
+
+```html
+<!DOCTYPE html>
+<html>
+  <body>
+    <button onclick="openDrawio()">
+      打开编辑 (实际使用时，需判断 drawio 是否初始化好)
+    </button>
+    <div>png图：</div>
+    <img id="png" src="" />
+    <div>svg图：<small>(优点：不失真，缺点：安全性兼容性)</small></div>
+    <div id="svg"></div>
+  </body>
+  <script
+    src="https://imaoda.github.io/drawio-embed/umd/drawio-embed.min.js"
+    onload="openDrawio = drawioEmbed()"
+  ></script>
+  <script>
+    const pngDom = document.querySelector("#png");
+    const svgDom = document.querySelector("#svg");
+
+    // 监听绘制完毕事件
+    window.addEventListener(
+      "drawioImageCreated",
+      ({ imageType, imageContent }) => {
+        if (imageType === "png") pngDom.src = imageContent;
+        if (imageType === "svg") svgDom.innerHTML = imageContent;
+      }
+    );
+  </script>
+</html>
+```
+
+## 使用个人部署的 drawio
+
+drawio 官网初次访问较慢 _(不过初次加载后会建立 service worker 缓存)_，我们也可以自己部署一套，部署十分方便，只需静态资源托管即可
+
+1. git clone https://github.com/jgraph/drawio
+2. 静态资源托管 `src/main/webapp 路径
+
+在初始化的时候，支持加载自己部署的 drawio
+
+```js
+const openDrawio = drawioEmbed("https://xxx.com");
+```
 
 ## 打开 drawio
 
