@@ -79,6 +79,10 @@ openDrawio();
 </html>
 ```
 
+效果如下图：
+
+![](https://imaoda.github.io/drawio-embed/static/demo.gif)
+
 ## 部署自己的 drawio
 
 默认调用 drawio 官网的流程图，初次访问较慢 _(不过初次加载后会建立 service worker 缓存)_。当然，如果追求速度和安全性，我们也可以自己部署一套，部署十分方便，只需 2 步，完成静态资源托管
@@ -199,25 +203,38 @@ const openDrawio = drawioEmbed();
 openDrawio.close();
 ```
 
-## 聊一聊流程图嵌入原理
+## 浅析原理
 
-### 嵌入原理
+> tips: 下文的配图由 drawio 流程图绘制完成
 
-借助本工具，会自动将 drawio 会以 iframe 的形式初始化，我们可以把它看成一个附属的应用程序，我们借助它来绘制图片以及创建图片数据。
+### 嵌入方案
 
-iframe 形式的引入通常是耦合性较小的方式，并且我们也可以灵活方便的控制其加载时机。但同时还引入一个问题是，我们并不知道 iframe 是否加载完成，iframe 页面是否可以和我们的主页面进行通信。
+drawio 流程图在初始化后以 iframe 的形式嵌入，仿佛是一个附属的应用程序，有两个状态：
 
-因此在我们调用 `openDrawio` 时，有可能 iframe 还未加载完，为此，我们提供了一个错误回调
+1. 隐藏：iframe 在视野不可见
+2. 显示：iframe 在视野可见，并且绝对定位置于页面顶部
 
-```js
-openDrawio(er => {
-  console.log(`drawio 还在初始化中，请稍后打开 ${er.msg}`);
-});
+![](https://imaoda.github.io/drawio-embed/static/iframe.png)
 
-openDrawio("https://xxx.com/1.svg", () => {
-  console.log(`drawio 还在初始化中，请稍后打开`);
-});
-```
+### 页面与流程图的通信
+
+页面和流程图是父子 frame 的关系，因此采用 postMessage 进行双向通信
+
+> postMessage 仅支持字符串，因此复杂的数据结构通过 JSON 来序列化/反序列化
+
+双方建立在 postMessage 的收发通道上，约定了几种通信的协议：
+
+| 协议名  | 含义              | 来源方 |
+| ------- | ----------------- | ------ |
+| init    | 流程图加载完      | 流程图 |
+| save    | 用户点击了保存键  | 流程图 |
+| exit    | 用户点击了取消键  | 流程图 |
+| export  | 有图片数据导出    | 流程图 |
+| load    | 请求加载图片      | 父页面 |
+| export  | 请求导出图片      | 父页面 |
+| spinner | 显示/隐藏 loading | 父页面 |
+
+### 流程图的生命周期
 
 drawio 的初始化过程，分为以下几个阶段：
 
