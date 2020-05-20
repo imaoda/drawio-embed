@@ -237,17 +237,81 @@
       _this.iframeInserted = false;
       _this.drawioUrl = "";
 
-      _this.init = function (drawioUrl) {
-        var editImage = _this.editImage.bind(_assertThisInitialized(_this));
+      _this.closeIframe = function () {
+        var evc = new Event("drawioClosed");
+        window.dispatchEvent(evc);
 
-        editImage.close = _this.closeIframe.bind(_assertThisInitialized(_this));
-        if (_this.iframeInserted) return editImage;
+        _this.hideIframe();
+      };
+
+      _this.editImage = function (url) {
+        if (!_this.drawioFrameLoaded) return Promise.reject();
+
+        if (!url) {
+          _this.sendMsgToDrawio({
+            action: "load"
+          });
+
+          _this.showIframe();
+
+          return;
+        }
+
+        if (url.indexOf("<svg") === 0) {
+          _this.sendMsgToDrawio({
+            action: "load",
+            xml: url
+          });
+
+          _this.showIframe();
+
+          return;
+        }
+
+        _this.showIframe();
+
+        _this.sendMsgToDrawio({
+          action: "spinner",
+          message: "加载中...",
+          show: true,
+          enabled: false
+        });
+
+        fetch(url).then(function (i) {
+          return i.text();
+        }).then(function (xml) {
+          _this.sendMsgToDrawio({
+            action: "spinner",
+            message: "",
+            show: false,
+            enabled: true
+          });
+
+          setTimeout(function () {
+            _this.sendMsgToDrawio({
+              action: "load",
+              xml: xml
+            });
+          }, 50);
+        }).catch(function () {
+          _this.sendMsgToDrawio({
+            action: "spinner",
+            message: "流程图加载失败",
+            show: true,
+            enabled: false
+          });
+        });
+      };
+
+      _this.init = function (drawioUrl) {
+        _this.editImage.close = _this.closeIframe;
+        if (_this.iframeInserted) return _this.editImage;
         _this.iframeInserted = true;
         if (!drawioUrl) drawioUrl = "https://www.draw.io/";
 
         _this.initCommunication(drawioUrl);
 
-        return editImage;
+        return _this.editImage;
       };
 
       return _this;
@@ -291,69 +355,6 @@
         }, 300);
       }
     }, {
-      key: "closeIframe",
-      value: function closeIframe() {
-        var evc = new Event("drawioClosed");
-        window.dispatchEvent(evc);
-        this.hideIframe();
-      }
-    }, {
-      key: "editImage",
-      value: function editImage(url) {
-        var _this3 = this;
-
-        if (!this.drawioFrameLoaded) return Promise.reject();
-
-        if (!url) {
-          this.sendMsgToDrawio({
-            action: "load"
-          });
-          this.showIframe();
-          return;
-        }
-
-        if (url.indexOf("<svg") === 0) {
-          this.sendMsgToDrawio({
-            action: "load",
-            xml: url
-          });
-          this.showIframe();
-          return;
-        }
-
-        this.showIframe();
-        this.sendMsgToDrawio({
-          action: "spinner",
-          message: "加载中...",
-          show: true,
-          enabled: false
-        });
-        fetch(url).then(function (i) {
-          return i.text();
-        }).then(function (xml) {
-          _this3.sendMsgToDrawio({
-            action: "spinner",
-            message: "",
-            show: false,
-            enabled: true
-          });
-
-          setTimeout(function () {
-            _this3.sendMsgToDrawio({
-              action: "load",
-              xml: xml
-            });
-          }, 50);
-        }).catch(function () {
-          _this3.sendMsgToDrawio({
-            action: "spinner",
-            message: "流程图加载失败",
-            show: true,
-            enabled: false
-          });
-        });
-      }
-    }, {
       key: "getFrame",
       value: function getFrame() {
         if (!this.drawioIframe) {
@@ -380,7 +381,7 @@
     }, {
       key: "bindEventListener",
       value: function bindEventListener() {
-        var _this4 = this;
+        var _this3 = this;
 
         if (this.eventListenerBound) return;
         this.eventListenerBound = true;
@@ -398,42 +399,42 @@
 
           switch (event) {
             case "init":
-              _this4.drawioFrameLoaded = true;
+              _this3.drawioFrameLoaded = true;
               window.dispatchEvent(new Event("drawioLoaded"));
               break;
 
             case "save":
-              _this4.sendMsgToDrawio({
+              _this3.sendMsgToDrawio({
                 action: "export",
                 format: "png",
                 spinKey: "saving"
               });
 
-              _this4.setSavingFlag();
+              _this3.setSavingFlag();
 
-              _this4.checkReady(function () {
-                _this4.sendMsgToDrawio({
+              _this3.checkReady(function () {
+                _this3.sendMsgToDrawio({
                   action: "export",
                   format: "svg",
                   spinKey: "saving"
                 });
               });
 
-              if (_this4.closeHolding) {
-                _this4.sendMsgToDrawio({
+              if (_this3.closeHolding) {
+                _this3.sendMsgToDrawio({
                   action: "spinner",
                   message: "保存中...",
                   show: true,
                   enabled: false
                 });
-              } else _this4.hideIframe();
+              } else _this3.hideIframe();
 
               break;
 
             case "export":
               if (!msg.data) return;
 
-              _this4.clearSavingFlag();
+              _this3.clearSavingFlag();
 
               if (msg.data.indexOf("data:image/png") !== -1) {
                 var ev = new Event("drawioImageCreated");
@@ -454,7 +455,7 @@
               break;
 
             case "exit":
-              _this4.closeIframe();
+              _this3.closeIframe();
 
               break;
 

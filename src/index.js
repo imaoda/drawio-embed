@@ -4,7 +4,7 @@ import {
   hiddenStyle,
   queryStr,
   ItvCheck,
-  getKey,
+  getKey
 } from "./utils";
 
 class DrawioEmbed extends ItvCheck {
@@ -43,7 +43,7 @@ class DrawioEmbed extends ItvCheck {
     // 清空编辑区
     setTimeout(() => {
       this.sendMsgToDrawio({
-        action: "load",
+        action: "load"
       });
     }, 500);
 
@@ -53,22 +53,22 @@ class DrawioEmbed extends ItvCheck {
         action: "spinner",
         message: "",
         show: false,
-        enabled: true,
+        enabled: true
       });
     }, 300);
   }
 
-  closeIframe() {
+  closeIframe = () => {
     const evc = new Event("drawioClosed");
     window.dispatchEvent(evc);
     this.hideIframe();
-  }
+  };
 
-  editImage(url) {
+  editImage = url => {
     if (!this.drawioFrameLoaded) return Promise.reject();
     if (!url) {
       this.sendMsgToDrawio({
-        action: "load",
+        action: "load"
       });
       this.showIframe();
       return;
@@ -76,7 +76,7 @@ class DrawioEmbed extends ItvCheck {
     if (url.indexOf("<svg") === 0) {
       this.sendMsgToDrawio({
         action: "load",
-        xml: url,
+        xml: url
       });
       this.showIframe();
       return;
@@ -86,22 +86,22 @@ class DrawioEmbed extends ItvCheck {
       action: "spinner",
       message: "加载中...",
       show: true,
-      enabled: false,
+      enabled: false
     });
 
     fetch(url)
-      .then((i) => i.text())
-      .then((xml) => {
+      .then(i => i.text())
+      .then(xml => {
         this.sendMsgToDrawio({
           action: "spinner",
           message: "",
           show: false,
-          enabled: true,
+          enabled: true
         });
         setTimeout(() => {
           this.sendMsgToDrawio({
             action: "load",
-            xml,
+            xml
           });
         }, 50);
       })
@@ -110,10 +110,10 @@ class DrawioEmbed extends ItvCheck {
           action: "spinner",
           message: "流程图加载失败",
           show: true,
-          enabled: false,
+          enabled: false
         });
       });
-  }
+  };
 
   getFrame() {
     if (!this.drawioIframe) {
@@ -123,14 +123,13 @@ class DrawioEmbed extends ItvCheck {
     return this.drawioIframe;
   }
 
-  init = (drawioUrl) => {
-    const editImage = this.editImage.bind(this);
-    editImage.close = this.closeIframe.bind(this);
-    if (this.iframeInserted) return editImage;
+  init = drawioUrl => {
+    this.editImage.close = this.closeIframe;
+    if (this.iframeInserted) return this.editImage;
     this.iframeInserted = true;
     if (!drawioUrl) drawioUrl = "https://www.draw.io/";
     this.initCommunication(drawioUrl);
-    return editImage;
+    return this.editImage;
   };
 
   initCommunication(drawioUrl) {
@@ -150,7 +149,7 @@ class DrawioEmbed extends ItvCheck {
   bindEventListener() {
     if (this.eventListenerBound) return;
     this.eventListenerBound = true;
-    window.addEventListener("message", (e) => {
+    window.addEventListener("message", e => {
       if (!e.data) return;
       let msg = null;
       try {
@@ -167,14 +166,14 @@ class DrawioEmbed extends ItvCheck {
           this.sendMsgToDrawio({
             action: "export",
             format: "png",
-            spinKey: "saving",
+            spinKey: "saving"
           });
           this.setSavingFlag();
           this.checkReady(() => {
             this.sendMsgToDrawio({
               action: "export",
               format: "svg",
-              spinKey: "saving",
+              spinKey: "saving"
             });
           });
           if (this.closeHolding) {
@@ -182,7 +181,7 @@ class DrawioEmbed extends ItvCheck {
               action: "spinner",
               message: "保存中...",
               show: true,
-              enabled: false,
+              enabled: false
             });
           } else this.hideIframe();
           break;
@@ -195,7 +194,7 @@ class DrawioEmbed extends ItvCheck {
             ev.imageContent = msg.data;
             window.dispatchEvent(ev);
           } else {
-            processSvg(msg.xml, msg.data, (img) => {
+            processSvg(msg.xml, msg.data, img => {
               const ev = new Event("drawioImageCreated");
               ev.imageType = "svg";
               ev.imageContent = img;

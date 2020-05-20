@@ -14,7 +14,7 @@
 
 ## 快速开始
 
-整个过程，通常只需 3 步骤
+开箱即用，只需 3 步
 
 ```js
 import drawioEmbed from "drawio-embed";
@@ -41,11 +41,11 @@ openDrawio();
 ></script>
 ```
 
-流程图初始化时会占用较多的网络资源，可选择滞后加载，或按需加载
+流程图初始化时会占用较多的网络资源，可选择滞后/按需加载
 
 ## DIY
 
-打开下面的代码可尝试用，[Demo]()
+黏贴下面代码到本地并用浏览器打开即可，或查看 [Demo](https://imaoda.github.io/drawio-embed/demo.html)
 
 ```html
 <!DOCTYPE html>
@@ -56,7 +56,7 @@ openDrawio();
     </button>
     <div>png图：</div>
     <img id="png" src="" />
-    <div>svg图：<small>(优点：不失真，缺点：安全性兼容性)</small></div>
+    <div>svg图：<small>(不失真，但需考虑安全性兼容性)</small></div>
     <div id="svg"></div>
   </body>
   <script
@@ -67,7 +67,7 @@ openDrawio();
     const pngDom = document.querySelector("#png");
     const svgDom = document.querySelector("#svg");
 
-    // 监听绘制完毕事件
+    // 监听返回的图片
     window.addEventListener(
       "drawioImageCreated",
       ({ imageType, imageContent }) => {
@@ -79,20 +79,33 @@ openDrawio();
 </html>
 ```
 
-## 使用个人部署的 drawio
+## 部署自己的 drawio
 
-drawio 官网初次访问较慢 _(不过初次加载后会建立 service worker 缓存)_，我们也可以自己部署一套，部署十分方便，只需静态资源托管即可
+默认调用 drawio 官网的流程图，初次访问较慢 _(不过初次加载后会建立 service worker 缓存)_。当然，如果追求速度和安全性，我们也可以自己部署一套，部署十分方便，只需 2 步，完成静态资源托管
 
 1. git clone https://github.com/jgraph/drawio
-2. 静态资源托管 `src/main/webapp 路径
+2. 静态资源托管 `src/main/webapp` 路径
 
-在初始化的时候，支持加载自己部署的 drawio
+在初始化的时候，更改配置，指向自己部署的 drawio
 
 ```js
 const openDrawio = drawioEmbed("https://xxx.com");
 ```
 
-## 打开 drawio
+## Documentation
+
+### 初始化
+
+```js
+import drawioEmbed from "drawio-embed";
+const openDrawio = drawioEmbed();
+```
+
+执行 `drawioEmbed()` 将在你的页面中，插入一个 iframe，iframe 加载流程图，并挪动到可视区域之外
+
+首次初始化之后，重复执行 `drawioEmbed()` 不会再执行，但依然会返回 `openDrawio` 的引用
+
+### 打开 drawio
 
 在页面中，通过初始化时的函数，来唤起 drawio 页面
 
@@ -192,6 +205,16 @@ window.addEventListener("message", function(e) {
 ## svg 安全问题
 
 ## 最佳实践
+
+## TypeScript
+
+`drawio-embed` include [Typescript](https://www.typescriptlang.org/) definitions
+
+```js
+import drawioEmbed from "drawio-embed";
+const openDrawio = drawioEmbed();
+openDrawio.close();
+```
 
 ## Author
 
