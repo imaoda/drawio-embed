@@ -214,7 +214,7 @@ drawio 流程图在初始化后以 iframe 的形式嵌入，仿佛是一个附�
 1. 隐藏：iframe 在视野不可见
 2. 显示：iframe 在视野可见，并且绝对定位置于页面顶部
 
-<img style='width: 500px;padding: 10px' src='https://imaoda.github.io/drawio-embed/static/iframe.png' />
+![](https://imaoda.github.io/drawio-embed/static/iframe.png)
 
 ### 页面与流程图的通信
 
