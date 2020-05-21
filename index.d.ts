@@ -1,6 +1,7 @@
 declare namespace openDrawio {
   const close: () => void;
   const isOpen: () => boolean;
+  const isLoaded: () => boolean;
 }
 declare function openDrawio(): Promise<void>;
 
