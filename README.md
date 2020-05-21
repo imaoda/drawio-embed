@@ -135,7 +135,7 @@ openDrawio("https://xxx.com/1.svg");
 openDrawio("<svg>...</svg>");
 ```
 
-> 注意：这里的 svg 图片须为通过本项目导出的 svg，而非任意 svg
+> 注：这里的 svg 图片须为通过本项目导出的 svg，而非任意 svg。 如果需要使用网络地址，则需要同域，或者允许跨域
 
 ### 尝试打开一个尚未加载好的编辑器
 
@@ -252,16 +252,18 @@ drawio 流程图在初始化后以 iframe 的形式嵌入，仿佛是一个附�
 4. 监听 export 事件，合成新的 Event，发送给父页面
 5. 维护流程图的开启/关闭状态
 
-### 巧妙的 svg 的格式
+### 巧妙地组装 svg
 
-`drawio-embed` 巧妙之处在于使用了一种特别的 svg 特性，它的优势在于：
+`drawio-embed` 最具有特色的地方，在于构建出一个组装的 svg，它的优势在于：
 
 1. 像一个普通的 svg 图片一样被各种预览工具打开，如 chrome、微信 webview
-2. 能携带 xml 编辑数据，在 drawio 中恢复编辑
+2. 能携带 mxfile 编辑数据，在 drawio 中恢复编辑
 
-这也是 `drawio-embed` 这个工具最大的优势所在
+![](https://imaoda.github.io/drawio-embed/static/imagetrans.png)
 
-## 聊一聊 drawio 与父页面的通信
+由 `drawio-embed` 导出的 svg 数据能够兼顾展示和恢复编辑的需求，无需开发者自行关联。
+
+对于导出的 svg 数据，只需 openDrawio(svg) 即可打开流程图编辑器，恢复编辑，支持网络地址或本地资源，对于网络地址，会先 fetch 到内容再导入到流程图里
 
 ## 个人 drawio 的部署与微调
 
@@ -291,12 +293,6 @@ window.addEventListener("message", function(e) {
 });
 ```
 
-## svg 信息携带
-
-## svg 安全问题
-
-## 最佳实践
-
 ## Author
 
 👤 **wangyongfeng**
@@ -306,7 +302,3 @@ window.addEventListener("message", function(e) {
 ## Show your support
 
 Give a ⭐️ if this project helped you!
-
----
-
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
