@@ -244,6 +244,14 @@
         _this.hideIframe();
       };
 
+      _this.isOpen = function () {
+        return _this.isIframeVisible;
+      };
+
+      _this.isLoaded = function () {
+        return _this.initialized;
+      };
+
       _this.editImage = function (url) {
         if (!_this.drawioFrameLoaded) return Promise.reject();
 
@@ -305,6 +313,8 @@
 
       _this.init = function (drawioUrl) {
         _this.editImage.close = _this.closeIframe;
+        _this.editImage.isOpen = _this.isOpen;
+        _this.editImage.isLoaded = _this.isLoaded;
         if (_this.iframeInserted) return _this.editImage;
         _this.iframeInserted = true;
         if (!drawioUrl) drawioUrl = "https://www.draw.io/";
