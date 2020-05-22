@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to drawio-embed</h1>
 <p>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.2-blue.svg?cacheSeconds=2592000" />
 </p>
 
 > embed drawio into your website
