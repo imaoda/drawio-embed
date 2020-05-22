@@ -244,7 +244,7 @@ drawio 流程图在初始化后以 iframe 的形式嵌入，仿佛是一个附�
 
 ![](https://imaoda.github.io/drawio-embed/static/lifecircle.png)
 
-主要以下主要的过程：
+主要涵盖以下的过程：
 
 1. 父页面初始加载，并隐藏
 2. 监听 load 事件自动打开流程图
